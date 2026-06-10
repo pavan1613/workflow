@@ -3,11 +3,11 @@ name: Portfolio Website CI
 on:
   push:
     branches:
-      - main
+      - workflow-practise
 
   pull_request:
     branches:
-      - main
+      - workflow-practise
 
 jobs:
   test-website:
