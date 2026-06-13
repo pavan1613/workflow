@@ -8,3 +8,8 @@ def test_title_exists():
 
     assert "<title>" in content
     assert "</title>" in content
+
+def test_video_tag_exists():
+    content = Path("index.html").read_text(encoding="utf-8")
+
+    assert "<video" in content
