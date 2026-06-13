@@ -1,44 +1,71 @@
-name: Portfolio Website CI
+name: Portfolio Website CI/CD
 
 on:
   push:
     branches:
-      - workflow-practise
+      - main
 
-  pull_request:
-    branches:
-      - workflow-practise
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  test-website:
+
+  test:
 
     runs-on: ubuntu-latest
 
     steps:
 
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install Dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Run Tests
-      run: |
-        pytest tests -v
+      - name: Create Reports Folder
+        run: mkdir -p reports
 
-    - name: Upload Website Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: portfolio-site
-        path: |
-          index.html
-          styles.css
-          *.png
-          *.pdf
-          *.mp4
+      - name: Run Tests
+        run: |
+          pytest tests -v \
+          --html=reports/test-report.html \
+          --self-contained-html
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-html-report
+          path: reports/test-report.html
+
+  deploy:
+
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
